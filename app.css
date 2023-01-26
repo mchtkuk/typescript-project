@@ -7,14 +7,23 @@ html {
 }
 
 body {
-  margin: 0;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+li {
+  display: flex;
+  justify-content: center;
 }
 
 label,
 input,
 textarea {
-  display: block;
+  display: flex;
   margin: 0.5rem 0;
+  width: 50vw;
+  justify-content: center;
 }
 
 label {
@@ -26,7 +35,6 @@ textarea {
   font: inherit;
   padding: 0.2rem 0.4rem;
   width: 100%;
-  max-width: 30rem;
   border: 1px solid #ccc;
 }
 
@@ -37,12 +45,15 @@ textarea:focus {
 }
 
 button {
+  display:flex;
+  justify-content: center;
   font: inherit;
   background: #ff0062;
   border: 1px solid #ff0062;
   cursor: pointer;
   color: white;
   padding: 0.75rem 1rem;
+  margin: 0 auto;
 }
 
 button:focus {
