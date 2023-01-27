@@ -23,6 +23,8 @@ h1 {
 li {
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  text-align: center;
 }
 
 label,
@@ -32,6 +34,7 @@ textarea {
   margin: 0.5rem 0;
   justify-content: center;
   text-align: center;
+  resize: none;
 }
 
 label {
