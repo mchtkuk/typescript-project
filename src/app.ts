@@ -1,3 +1,19 @@
+// Drag and drop Interface
+
+
+
+interface Draggable {
+  dragStartHandler(event: DragEvent): void;
+  dragEndHandler(event: DragEvent): void;
+}
+
+interface DragTarget {
+  dragOverHandler(event: DragEvent): void;
+  dropHandler(event:DragEvent): void;
+  dragLeaveHandler(event: DragEvent): void;
+}
+
+
 // Project Type
 
 enum ProjectStatus {
@@ -73,6 +89,19 @@ class ProjectState extends State<Project> {
     private constructor(){
         super();
     }
+    
+    moveProject(projectId: string, newStatus: ProjectStatus) {
+      const project = this.projects.find((prj) => prj.id === projectId);
+    if (project && project.status !== newStatus) {
+      project.status = newStatus;
+      this.updateListeners();
+    }
+  }
+    private updateListeners() {
+      for(const listenerFn of this.listeners) {
+        listenerFn(this.projects.slice());
+      }
+    }
 
 
      static getInstance() {
@@ -91,7 +120,7 @@ class ProjectState extends State<Project> {
         for(const listenerFn of this.listeners) {
             listenerFn(this.projects.slice());
         }
-    }
+    }  
 }
 
 const projectState = ProjectState.getInstance();
@@ -156,7 +185,7 @@ function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
 }
 
 
-class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> implements Draggable {
   private project: Project;
 
   get persons() {
@@ -174,8 +203,20 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
     this.configure();
     this.renderContent();
   }
+  @autobind
+  dragStartHandler(event: DragEvent) {
+    event.dataTransfer!.setData('text/plain', this.project.id);
+    event.dataTransfer!.effectAllowed = 'move';
+  }
 
-  configure() {}
+  @autobind
+  dragEndHandler(_: DragEvent) {
+  }
+
+  configure() {
+    this.element.addEventListener('dragstart', this.dragStartHandler);
+    this.element.addEventListener('dragend',this.dragEndHandler);
+  }
 
   renderContent() {
     this.element.querySelector('h2')!.textContent = this.project.title;
@@ -185,7 +226,7 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
   }
 }
 
-class ProjectList extends Component<HTMLDivElement, HTMLElement> {
+class ProjectList extends Component<HTMLDivElement, HTMLElement> implements DragTarget {
     assignedProjects: Project[];
    
     constructor(private type: 'active' | 'finished') {
@@ -196,7 +237,30 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
         this.renderContent();
     }
 
+    @autobind
+    dragOverHandler(event: DragEvent)  {
+        if(event?.dataTransfer?.types[0] === 'text/plain') {
+          event.preventDefault();
+        }
+        const listEl = this.element.querySelector('ul')!;
+        listEl.classList.add('droppable');
+    }
+    @autobind
+    dropHandler(event: DragEvent) {
+      const prjId = event.dataTransfer!.getData('text/plain');
+      projectState.moveProject(prjId, this.type === 'active' ? ProjectStatus.Active : ProjectStatus.Finished);
+    }
+    @autobind
+    dragLeaveHandler(_: DragEvent) {
+      const listEl = this.element.querySelector('ul')!;
+      listEl.classList.remove('droppable');
+    }
+
     configure() {
+      this.element.addEventListener('dragover', this.dragOverHandler)
+      this.element.addEventListener('dragleave', this.dragLeaveHandler)
+      this.element.addEventListener('drop', this.dropHandler)
+
         projectState.addListener((projects: Project[]) => {
           const relevantProjects = projects.filter(prj => {
             if (this.type === 'active') {
@@ -216,6 +280,8 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
           this.type.toUpperCase() + ' PROJECTS';
       }
 
+      
+
     private renderProjects() { 
         const listEl = document.getElementById(`${this.type}-projects-list`)! as HTMLUListElement;
         listEl.innerHTML = '';
@@ -224,7 +290,6 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
         }
     }
 }
-
 
 //ProjectInput Class
 class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
@@ -306,6 +371,7 @@ class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
        if(Array.isArray(userInput)) {
         const [title, desc, people] = userInput;
         projectState.addProject(title,desc,people);
+        console.log(userInput)
         this.clearInputs();
        }
     }
@@ -314,3 +380,5 @@ class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
 const prjInput = new ProjectInput();
 const activePrjList = new ProjectList('active');
 const finishedPrjList = new ProjectList('finished');
+
+
