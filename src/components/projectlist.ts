@@ -1,10 +1,10 @@
-import { Component } from "./basecomponent.js";
-import { DragTarget } from "../models/dragdrop.js";
-import { Project } from "../models/project.js";
-import { autobind } from "../decorators/autobind.js";
-import { projectState } from "../state/projectstate.js";
-import { ProjectStatus } from "../models/project.js";
-import { ProjectItem } from "./projectitem.js";
+import { Component } from "./basecomponent";
+import { DragTarget } from "../models/dragdrop";
+import { Project } from "../models/project";
+import { autobind } from "../decorators/autobind";
+import { projectState } from "../state/projectstate";
+import { ProjectStatus } from "../models/project";
+import { ProjectItem } from "./projectitem";
 
 // ProjectList Class
 export class ProjectList
